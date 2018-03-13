@@ -33,7 +33,7 @@ impl Buffer {
 					lv.draw_window();
 					break;
 				},
-				KEY_BACKSPACE | KEY_DC | KEY_DL => {
+				127 | KEY_BACKSPACE | KEY_DC | KEY_DL => {
 					{
 	                   lv.log.mission_list()[index].entries[ei].entry_text.pop();
 	                }
