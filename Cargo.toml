@@ -1,0 +1,12 @@
+[package]
+name = "cursed_life"
+version = "0.1.0"
+authors = ["john.salamon"]
+
+[dependencies]
+alws = { path = "../alws" }
+ncurses = { version = "5.91.0", features = ["menu"] }
+chrono = { version = "0.4", features = ["serde", "rustc-serialize"] }
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
