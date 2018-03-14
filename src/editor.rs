@@ -4,17 +4,94 @@ use ncurses::*;
 use view::LogView;
 /// Simple text buffer
 pub struct Buffer {
-	lines: Vec<String>,
+	pub lines: Vec<String>, // each string in the vec is a line in the buffer
+	pub pos: (usize, usize), // cursor position in the buffer
 }
 
 impl Buffer {
 
 	pub fn new() -> Self {
+		let mut lines = Vec::new();
+		lines.push(String::new());
 		Buffer {
-			lines: Vec::new(),
+			lines,
+			pos: (0,0),
 		}
 	}
 
+	///
+	pub fn take_input(&mut self) -> Result<(), ()> {
+		let ch = getch();
+		match ch {
+			27 /* ESC */ => {
+				return Err(()); // calling function should handle this
+			},
+			10 /* ENTER */ => {
+				self.pos.1 += 1;
+				self.lines.insert(self.pos.1, String::new()); // push a new line
+				self.pos.0 = 0;
+			},
+			127 | KEY_BACKSPACE | KEY_DC | KEY_DL => {
+				if self.lines.get(self.pos.1).unwrap().len() > 0 { // there's at least one character in the line
+					self.lines.get_mut(self.pos.1).unwrap().pop(); // so delete it
+					self.pos.0 -= 1;
+				}
+				else if self.pos.1 > 0 { // we aren't on the first line,
+					self.lines.remove(self.pos.1); // so it's okay to remove this one
+					self.pos.1 -= 1;
+					self.pos.0 = self.lines.get(self.pos.1).unwrap().len();
+				}				
+			},
+			KEY_UP => {
+				if self.pos.1 > 0 {
+					self.pos.1 -= 1;
+					let line_len = self.lines.get(self.pos.1).unwrap().len();
+					if line_len < self.pos.0 {
+						self.pos.0 = line_len; 
+					}
+				}
+			},
+			KEY_DOWN => {
+				if self.pos.1 < self.lines.len() - 1 {
+					self.pos.1 += 1;
+					let line_len = self.lines.get(self.pos.1).unwrap().len();
+					if line_len < self.pos.0 {
+						self.pos.0 = line_len; 
+					}
+				}
+
+			},
+			KEY_LEFT => {
+				if self.pos.0 > 0 {
+					self.pos.0 -= 1;
+				}
+				else if self.pos.1 > 0 {
+					self.pos.1 -= 1;
+					let line_len = self.lines.get(self.pos.1).unwrap().len();
+					self.pos.0 = line_len;
+				}
+			},
+			KEY_RIGHT => {
+				if self.pos.0 < self.lines.get(self.pos.1).unwrap().len() {
+					self.pos.0 += 1;
+				}
+				else if self.pos.1 < self.lines.len() - 1 {
+					self.pos.1 += 1;
+					self.pos.0 = 0;
+				}
+			},
+			_ => {
+				self.lines.get_mut(self.pos.1).unwrap().insert(self.pos.0, ch as u8 as char); // push character to the last line
+				self.pos.0 += 1;
+			},
+		}
+		Ok(())
+
+	}
+
+	/// capture a single character of input, update the buffer, and return
+	/// we can call this whenever we need to take on-screen input from curses
+	/// it's then trivial to look at how many lines there are and write to a window
 	pub fn capture_input(&self, lv: &mut LogView) {
 
 		curs_set(CURSOR_VISIBILITY::CURSOR_VERY_VISIBLE);

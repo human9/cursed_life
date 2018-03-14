@@ -3,6 +3,8 @@ extern crate ncurses;
 use ncurses::*;
 use alws::*;
 
+use editor::Buffer;
+
 use chrono::prelude::*;
 
 pub struct LogView {
@@ -45,6 +47,31 @@ impl LogView {
         self.free_menu();
         self.build_menu(index);
 
+        wmove(self.details_window, 0, 0);
+        werase(self.details_window);
+        
+        let mut buf = Buffer::new(); 
+        while buf.take_input() == Ok(()) {
+            let (mut row, mut col): (i32, i32) = (0, 0);
+            getmaxyx(self.details_window, &mut row, &mut col); 
+
+            // redraw
+            let mut skip = 0; // for linewrapping
+            let mut cursor_x = 0;
+            let mut cursor_y = 0;
+            for (i, line) in buf.lines.iter().enumerate() {
+                if i == buf.pos.1 {
+                    let n = line.len() as i32 / col;
+                    cursor_x = buf.pos.0 as i32 - n as i32 * col;
+                    cursor_y = i as i32 + skip;
+                }
+                clrprintw(self.details_window, i as i32 + skip, 0, line);
+                skip += line.len() as i32 / col;
+            }
+
+            wmove(self.details_window, cursor_y as i32, cursor_x as i32);
+            wrefresh(self.details_window);
+        }
     }
 
     pub fn up(&mut self) {
@@ -74,7 +101,7 @@ impl LogView {
         let my_menu = new_menu(&mut self.items);
         menu_opts_off(my_menu, O_SHOWDESC);
 
-        if self.log.mission_list().len() > 1 {
+        if self.log.mission_list().len() > 0 {
             set_current_item(my_menu, self.items[index]);
         }
 
@@ -132,7 +159,7 @@ impl LogView {
             local.format(&fmt).to_string()
         };
         
-        if self.log.mission_list().len() > 1 {
+        if self.log.mission_list().len() > 0 {
             let index = item_index(current_item(self.menu)) as usize;
             let ref mission = self.log.mission_list()[index];
 

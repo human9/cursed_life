@@ -6,12 +6,14 @@ use alws::*;
 mod view;
 mod editor;
 use editor::Buffer;
+use std::env;
 
 extern crate ncurses;
 use ncurses::*;
 
 fn main() {
 
+    env::set_var("ESCDELAY", "25");
     initscr();
     use_default_colors();
     start_color();
