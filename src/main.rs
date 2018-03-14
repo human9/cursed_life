@@ -29,6 +29,14 @@ fn main() {
     let mut ch = getch();
     while ch != 81 && ch != 113 /* Upper and lower case Q */ {
         match ch {
+            78 | 110 => {
+                //prompt for name
+
+                // add new missions
+                let mission_index = lv.log.new_mission();
+                lv.new_node(mission_index);
+
+            },
             65 | 97 => /* A */ {
                 
                 let entry = MissionEntry::new(String::new());

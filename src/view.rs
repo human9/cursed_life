@@ -40,6 +40,13 @@ impl LogView {
         self.build_menu(index);
     }
 
+    pub fn new_node(&mut self, index: usize) {
+        unpost_menu(self.menu);
+        self.free_menu();
+        self.build_menu(index);
+
+    }
+
     pub fn up(&mut self) {
         menu_driver(self.menu, REQ_UP_ITEM);
         wrefresh(self.menu_window);
@@ -67,7 +74,10 @@ impl LogView {
         let my_menu = new_menu(&mut self.items);
         menu_opts_off(my_menu, O_SHOWDESC);
 
-        set_current_item(my_menu, self.items[index]);
+        if self.log.mission_list().len() > 1 {
+            set_current_item(my_menu, self.items[index]);
+        }
+        
         set_menu_mark(my_menu, "> ");
 
         let (mut rows, mut cols) = (0, 0);
@@ -104,8 +114,6 @@ impl LogView {
     pub fn draw_window(&mut self) {
         //need a subwindow to prevent destroying border
 
-        let index = item_index(current_item(self.menu)) as usize;
-        let ref mission = self.log.mission_list()[index];
 
         werase(self.details);
         box_(self.details, 0, 0);
@@ -121,24 +129,31 @@ impl LogView {
             let fmt = format!("%A, the {}{} of %B at %T", local.day(), day_suffixer(local.day()));
             local.format(&fmt).to_string()
         };
-
-        let start = mission.timestamp.clone();
-        let status = match &mission.completion {
-            &None => format!("Ongoing since {}", pretty_format(start)),
-            &Some(ref dt) => format!("Completion on {}", pretty_format(dt.timestamp)),
-        };
-        wprint(self.details_window, &format!("{}\nStatus: {}\n\nMission brief:\n{}\n", mission.title, status, mission.description));
         
-        let basic_format = |ref utc: DateTime<Utc>| {
-            let local = utc.with_timezone(&Local);
-            let fmt = format!("%F at %T");
-            local.format(&fmt).to_string()
-        };
+        if self.log.mission_list().len() > 1 {
+            let index = item_index(current_item(self.menu)) as usize;
+            let ref mission = self.log.mission_list()[index];
 
-        for entry in &mission.entries {
-            wprint(self.details_window, &format!("\n\n{}\n", basic_format(entry.timestamp)));
-            wprint(self.details_window, &format!("{}", entry.entry_text));
-        }
+
+            let start = mission.timestamp.clone();
+            let status = match &mission.completion {
+                &None => format!("Ongoing since {}", pretty_format(start)),
+                &Some(ref dt) => format!("Completion on {}", pretty_format(dt.timestamp)),
+            };
+            wprint(self.details_window, &format!("{}\nStatus: {}\n\nMission brief:\n{}\n", mission.title, status, mission.description));
+            
+            let basic_format = |ref utc: DateTime<Utc>| {
+                let local = utc.with_timezone(&Local);
+                let fmt = format!("%F at %T");
+                local.format(&fmt).to_string()
+            };
+
+            for entry in &mission.entries {
+                wprint(self.details_window, &format!("\n\n{}\n", basic_format(entry.timestamp)));
+                wprint(self.details_window, &format!("{}", entry.entry_text));
+            }
+
+        };
 
         wrefresh(self.details_window);
 
