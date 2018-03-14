@@ -51,27 +51,31 @@ impl LogView {
         werase(self.details_window);
         
         let mut buf = Buffer::new(); 
+
+		curs_set(CURSOR_VISIBILITY::CURSOR_VERY_VISIBLE);
         while buf.take_input() == Ok(()) {
             let (mut row, mut col): (i32, i32) = (0, 0);
             getmaxyx(self.details_window, &mut row, &mut col); 
 
             // redraw
             let mut skip = 0; // for linewrapping
-            let mut cursor_x = 0;
+            //let mut cursor_x = 0;
             let mut cursor_y = 0;
             for (i, line) in buf.lines.iter().enumerate() {
                 if i == buf.pos.1 {
                     let n = line.len() as i32 / col;
-                    cursor_x = buf.pos.0 as i32 - n as i32 * col;
+                    //cursor_x = buf.pos.0 as i32 - n as i32 * col;
                     cursor_y = i as i32 + skip;
                 }
                 clrprintw(self.details_window, i as i32 + skip, 0, line);
                 skip += line.len() as i32 / col;
             }
 
-            wmove(self.details_window, cursor_y as i32, cursor_x as i32);
+            wmove(self.details_window, cursor_y as i32, buf.pos.0 as i32);
             wrefresh(self.details_window);
         }
+
+		curs_set(CURSOR_VISIBILITY::CURSOR_INVISIBLE);
     }
 
     pub fn up(&mut self) {

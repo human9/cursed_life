@@ -27,14 +27,25 @@ impl Buffer {
 				return Err(()); // calling function should handle this
 			},
 			10 /* ENTER */ => {
+                let new: String = self.lines.get(self.pos.1).unwrap()[self.pos.0..].to_string();
+                self.lines.get_mut(self.pos.1).unwrap().truncate(self.pos.0);
 				self.pos.1 += 1;
-				self.lines.insert(self.pos.1, String::new()); // push a new line
+				self.lines.insert(self.pos.1, new); // push a new line
 				self.pos.0 = 0;
 			},
 			127 | KEY_BACKSPACE | KEY_DC | KEY_DL => {
 				if self.lines.get(self.pos.1).unwrap().len() > 0 { // there's at least one character in the line
-					self.lines.get_mut(self.pos.1).unwrap().pop(); // so delete it
-					self.pos.0 -= 1;
+                    if self.pos.0 == 0 {
+                        let mv: String = self.lines.get(self.pos.1).unwrap().to_string();
+                        self.lines.remove(self.pos.1);
+                        self.pos.1 -= 1;
+                        self.pos.0 = self.lines.get(self.pos.1).unwrap().len();
+                        self.lines.get_mut(self.pos.1).unwrap().push_str(&mv);
+                    }
+                    else {
+                        self.lines.get_mut(self.pos.1).unwrap().pop(); // so delete it
+                        self.pos.0 -= 1;
+                    }
 				}
 				else if self.pos.1 > 0 { // we aren't on the first line,
 					self.lines.remove(self.pos.1); // so it's okay to remove this one
