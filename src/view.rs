@@ -77,12 +77,14 @@ impl LogView {
         if self.log.mission_list().len() > 1 {
             set_current_item(my_menu, self.items[index]);
         }
-        
+
         set_menu_mark(my_menu, "> ");
 
         let (mut rows, mut cols) = (0, 0);
         scale_menu(my_menu, &mut rows, &mut cols);
         rows = LINES() - 2;
+        if cols > COLS() / 3 { cols = cols / 3};
+        if cols < 12 { cols = 12};
         cols += 4;
 
         let my_menu_win = newwin(rows, cols, 0, 0);
