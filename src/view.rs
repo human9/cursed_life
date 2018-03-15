@@ -69,13 +69,13 @@ impl LogView {
 
             for (i, line) in buf.lines.iter().enumerate() {
                 clrprintw(self.details_window, i as i32, 0, line);
-                clrprintw(self.details_window, i as i32 + 1, 0, "---");
+                clrprintw(self.details_window, i as i32 + 1, 0, "~");
             }
             clrprintw(self.details_window, 30, 0, &format!("POS - {}:{}", buf.pos.0, buf.pos.1));
-
+            
+            refresh();
             wmove(self.details_window, buf.pos.1 as i32, buf.pos.0 as i32);
             wrefresh(self.details_window);
-
             // Open a file in write-only mode, returns `io::Result<File>`
             let mut file = match File::create(&path) {
                 Err(why) => panic!("couldn't create {}: {}",
@@ -94,6 +94,7 @@ impl LogView {
                     Ok(_) => (),
                 }
             }
+
         }
 
 

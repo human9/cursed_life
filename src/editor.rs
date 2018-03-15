@@ -36,11 +36,7 @@ impl Buffer {
 			127 | KEY_BACKSPACE | KEY_DC | KEY_DL => {
 				if self.pos.0 > 0  { 
 					// there are characters to delete, so delete them, easy
-					if self.pos.0 < self.lines.get(self.pos.1).unwrap().len() {
-						self.lines.get_mut(self.pos.1).unwrap().remove(self.pos.0); 
-					} else {
-						self.lines.get_mut(self.pos.1).unwrap().pop(); 
-					}
+					self.lines.get_mut(self.pos.1).unwrap().remove(self.pos.0-1); 
                     self.pos.0 -= 1;
 				}
 				else if self.pos.1 > 0 {
