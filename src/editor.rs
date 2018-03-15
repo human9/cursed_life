@@ -44,6 +44,7 @@ impl Buffer {
                     self.pos.0 -= 1;
 				}
 				else if self.pos.1 > 0 {
+					// no characters to delete, but lines to alter
 					if self.lines.get(self.pos.1).unwrap().len() > 0 {
 						// there are no characters left to delete, but we aren't on the first line
 						// so we have to move this line to the end of the last

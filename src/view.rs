@@ -3,6 +3,11 @@ extern crate ncurses;
 use ncurses::*;
 use alws::*;
 
+use std::error::Error;
+use std::io::prelude::*;
+use std::fs::File;
+use std::path::Path;
+
 use editor::Buffer;
 
 use chrono::prelude::*;
@@ -52,28 +57,46 @@ impl LogView {
         
         let mut buf = Buffer::new(); 
 
+        let path = Path::new("log.txt");
+        let display = path.display();
+
+
+
 		curs_set(CURSOR_VISIBILITY::CURSOR_VERY_VISIBLE);
         while buf.take_input() == Ok(()) {
             let (mut row, mut col): (i32, i32) = (0, 0);
             getmaxyx(self.details_window, &mut row, &mut col); 
 
-            // redraw
-            let mut skip = 0; // for linewrapping
-            //let mut cursor_x = 0;
-            let mut cursor_y = 0;
             for (i, line) in buf.lines.iter().enumerate() {
-                if i == buf.pos.1 {
-                    //cursor_x = buf.pos.0 as i32 - n as i32 * col;
-                    cursor_y = i as i32 + skip;
-                }
-                clrprintw(self.details_window, i as i32 + skip, 0, line);
-                skip += line.len() as i32 / col;
-                clrprintw(self.details_window, i as i32 + skip + 1, 0, "");
+                clrprintw(self.details_window, i as i32, 0, line);
+                clrprintw(self.details_window, i as i32 + 1, 0, "---");
             }
+            clrprintw(self.details_window, 30, 0, &format!("POS - {}:{}", buf.pos.0, buf.pos.1));
 
             wmove(self.details_window, buf.pos.1 as i32, buf.pos.0 as i32);
             wrefresh(self.details_window);
+
+            // Open a file in write-only mode, returns `io::Result<File>`
+            let mut file = match File::create(&path) {
+                Err(why) => panic!("couldn't create {}: {}",
+                                   display,
+                                   why.description()),
+                Ok(file) => file,
+            };
+            for (i, line) in buf.lines.iter().enumerate() {
+                let mut to_print = String::new();
+                to_print.push_str(line);
+                if i != buf.lines.len()-1 {
+                    to_print.push_str("\n");
+                }
+                match file.write(to_print.as_bytes()) {
+                    Err(_) => panic!("FuCK"),
+                    Ok(_) => (),
+                }
+            }
         }
+
+
 
 		curs_set(CURSOR_VISIBILITY::CURSOR_INVISIBLE);
     }
