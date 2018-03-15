@@ -63,15 +63,15 @@ impl LogView {
             let mut cursor_y = 0;
             for (i, line) in buf.lines.iter().enumerate() {
                 if i == buf.pos.1 {
-                    let n = line.len() as i32 / col;
                     //cursor_x = buf.pos.0 as i32 - n as i32 * col;
                     cursor_y = i as i32 + skip;
                 }
                 clrprintw(self.details_window, i as i32 + skip, 0, line);
                 skip += line.len() as i32 / col;
+                clrprintw(self.details_window, i as i32 + skip + 1, 0, "");
             }
 
-            wmove(self.details_window, cursor_y as i32, buf.pos.0 as i32);
+            wmove(self.details_window, buf.pos.1 as i32, buf.pos.0 as i32);
             wrefresh(self.details_window);
         }
 

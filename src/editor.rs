@@ -34,24 +34,32 @@ impl Buffer {
 				self.pos.0 = 0;
 			},
 			127 | KEY_BACKSPACE | KEY_DC | KEY_DL => {
-				if self.lines.get(self.pos.1).unwrap().len() > 0 { // there's at least one character in the line
-                    if self.pos.0 == 0 {
-                        let mv: String = self.lines.get(self.pos.1).unwrap().to_string();
-                        self.lines.remove(self.pos.1);
-                        self.pos.1 -= 1;
-                        self.pos.0 = self.lines.get(self.pos.1).unwrap().len();
-                        self.lines.get_mut(self.pos.1).unwrap().push_str(&mv);
-                    }
-                    else {
-                        self.lines.get_mut(self.pos.1).unwrap().pop(); // so delete it
-                        self.pos.0 -= 1;
-                    }
+				if self.pos.0 > 0  { 
+					// there are characters to delete, so delete them, easy
+					if self.pos.0 < self.lines.get(self.pos.1).unwrap().len() {
+						self.lines.get_mut(self.pos.1).unwrap().remove(self.pos.0); 
+					} else {
+						self.lines.get_mut(self.pos.1).unwrap().pop(); 
+					}
+                    self.pos.0 -= 1;
 				}
-				else if self.pos.1 > 0 { // we aren't on the first line,
-					self.lines.remove(self.pos.1); // so it's okay to remove this one
-					self.pos.1 -= 1;
-					self.pos.0 = self.lines.get(self.pos.1).unwrap().len();
-				}				
+				else if self.pos.1 > 0 {
+					if self.lines.get(self.pos.1).unwrap().len() > 0 {
+						// there are no characters left to delete, but we aren't on the first line
+						// so we have to move this line to the end of the last
+	                    let mv: String = self.lines.get(self.pos.1).unwrap().to_string();
+	                    self.lines.remove(self.pos.1);
+	                    self.pos.1 -= 1;
+	                    self.pos.0 = self.lines.get(self.pos.1).unwrap().len();
+	                    self.lines.get_mut(self.pos.1).unwrap().push_str(&mv);
+					}
+					else {
+						// just delete this line, and move to the end of the one above
+						self.lines.remove(self.pos.1);
+						self.pos.1 -= 1;
+						self.pos.0 = self.lines.get(self.pos.1).unwrap().len();
+					}	
+				}			
 			},
 			KEY_UP => {
 				if self.pos.1 > 0 {
