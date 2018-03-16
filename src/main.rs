@@ -5,8 +5,12 @@ use alws::*;
 
 mod view;
 mod editor;
+mod popup;
+
 use editor::Buffer;
 use std::env;
+use editor::InputType;
+
 
 extern crate ncurses;
 use ncurses::*;
@@ -48,8 +52,8 @@ fn main() {
                     mission.add_entry(entry);
                 }
                 lv.draw_window();
-                let buffer = Buffer::new();
-                buffer.capture_input(&mut lv);
+                let buffer = Buffer::new(InputType::MultiLine);
+                //buffer.capture_input(&mut lv);
             },
             KEY_RESIZE => {
                 lv.resize();

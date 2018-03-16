@@ -1,25 +1,50 @@
 extern crate ncurses;
 use ncurses::*;
 
-use view::LogView;
-/// Simple text buffer
+use std::error::Error;
+use std::io::prelude::*;
+use std::fs::File;
+
+/// Simple text buffer, handles input like vi in insert mode.
+/// Yeah, yeah, I'm basically just implementing a whole text editor at this point.
+/// Whatever man, I do what I want. And I want to procrastinate.
 pub struct Buffer {
 	pub lines: Vec<String>, // each string in the vec is a line in the buffer
 	pub pos: (usize, usize), // cursor position in the buffer
+	pub input_type: InputType,
+}
+
+pub enum InputType {
+	SingleLine,
+	MultiLine,
 }
 
 impl Buffer {
 
-	pub fn new() -> Self {
+	pub fn new(input_type: InputType) -> Self {
 		let mut lines = Vec::new();
 		lines.push(String::new());
 		Buffer {
 			lines,
 			pos: (0,0),
+			input_type,
 		}
 	}
 
-	///
+	/// Write the contents of the buffer to the given file
+	pub fn write_to_file(&self, file: &mut File) -> Result<(), Box<Error>> {
+        
+        for (i, line) in self.lines.iter().enumerate() {
+            let mut to_print = String::new();
+            to_print.push_str(line);
+            if i != self.lines.len()-1 {
+                to_print.push_str("\n");
+            }
+            file.write(to_print.as_bytes())?;
+        }
+		Ok(())
+	}
+
 	pub fn take_input(&mut self) -> Result<(), ()> {
 		let ch = getch();
 		match ch {
@@ -33,7 +58,7 @@ impl Buffer {
 				self.lines.insert(self.pos.1, new); // push a new line
 				self.pos.0 = 0;
 			},
-			127 | KEY_BACKSPACE | KEY_DC | KEY_DL => {
+			127 | KEY_BACKSPACE | KEY_DC | KEY_DL => /* how does backspace */{
 				if self.pos.0 > 0  { 
 					// there are characters to delete, so delete them, easy
 					self.lines.get_mut(self.pos.1).unwrap().remove(self.pos.0-1); 
@@ -105,9 +130,7 @@ impl Buffer {
 
 	}
 
-	/// capture a single character of input, update the buffer, and return
-	/// we can call this whenever we need to take on-screen input from curses
-	/// it's then trivial to look at how many lines there are and write to a window
+	/*
 	pub fn capture_input(&self, lv: &mut LogView) {
 
 		curs_set(CURSOR_VISIBILITY::CURSOR_VERY_VISIBLE);
@@ -142,8 +165,7 @@ impl Buffer {
 			ch = getch();
 		}
 		curs_set(CURSOR_VISIBILITY::CURSOR_INVISIBLE);
-
-
-	}
+		
+	}*/
 
 }
