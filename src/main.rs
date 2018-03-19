@@ -5,7 +5,6 @@ use alws::*;
 
 mod view;
 mod editor;
-mod popup;
 
 use editor::Buffer;
 use std::env;
