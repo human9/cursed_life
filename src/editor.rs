@@ -31,17 +31,21 @@ impl Buffer {
 		}
 	}
 
+	pub fn to_string(&self) -> String {
+		let mut s = String::new();
+		for (i, line) in self.lines.iter().enumerate() {
+            s.push_str(line);
+            if i != self.lines.len()-1 {
+                s.push_str("\n");
+            }
+        }
+        s
+	}
+
 	/// Write the contents of the buffer to the given file
 	pub fn write_to_file(&self, file: &mut File) -> Result<(), Box<Error>> {
         
-        for (i, line) in self.lines.iter().enumerate() {
-            let mut to_print = String::new();
-            to_print.push_str(line);
-            if i != self.lines.len()-1 {
-                to_print.push_str("\n");
-            }
-            file.write(to_print.as_bytes())?;
-        }
+        file.write(self.to_string().as_bytes())?;
 		Ok(())
 	}
 

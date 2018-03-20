@@ -6,6 +6,7 @@ use alws::*;
 mod view;
 mod editor;
 
+use view::*;
 use editor::Buffer;
 use std::env;
 use editor::InputType;
@@ -43,16 +44,14 @@ fn main() {
 
             },
             65 | 97 => /* A */ {
-                
-                let entry = MissionEntry::new(String::new());
+                let entry_text = input_box(lv.details_window).to_string();
+                let entry = MissionEntry::new(entry_text);
                 let index = item_index(current_item(lv.menu)) as usize;
                 {
                     let ref mut mission = lv.log.mission_list()[index];
                     mission.add_entry(entry);
                 }
                 lv.draw_window();
-                let buffer = Buffer::new(InputType::MultiLine);
-                //buffer.capture_input(&mut lv);
             },
             KEY_RESIZE => {
                 lv.resize();

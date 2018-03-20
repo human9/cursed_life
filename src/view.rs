@@ -15,6 +15,8 @@ pub struct LogView {
     pub menu_window: WINDOW,
     pub details: WINDOW,
     pub details_window: WINDOW,
+    pub info: WINDOW,
+    pub info_window: WINDOW,
     pub log: Log,
 }
 
@@ -27,6 +29,8 @@ impl LogView {
             menu_window: newwin(1, 1, 0, 0),
             details: newwin(2, 2, 0, 0),
             details_window: newwin(2, 2, 0, 0),
+            info: newwin(2, 2, 0, 0),
+            info_window: newwin(2, 2, 0, 0),
             log,
         };
 
@@ -113,10 +117,22 @@ impl LogView {
         self.menu = my_menu;
         self.menu_window = my_menu_win;
 
-        wresize(self.details, LINES()-2, COLS()-cols);
+        // TODO: No magic
+        // And encapsulate windows? Perhaps.
+
+        let d_height = 14;
+        wresize(self.details, d_height, COLS()-cols);
         mvwin(self.details, 0, cols);
-        wresize(self.details_window, LINES()-4, (COLS()-cols)-3);
+        wresize(self.details_window, d_height - 2, (COLS()-cols)-3);
         mvwin(self.details_window, 1, cols+2);
+
+        wresize(self.info, LINES()-d_height-2, COLS()-cols);
+        mvwin(self.info, d_height, cols);
+        box_(self.info, 0, 0);
+        wrefresh(self.info);
+        //wresize(self.details_window, d_height - 2, (COLS()-cols)-3);
+        //mvwin(self.details_window, 1, cols+2);
+
 
         self.draw_window();
 
