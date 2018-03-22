@@ -92,7 +92,7 @@ impl LogView {
             set_current_item(my_menu, self.items[index]);
         }
 
-        set_menu_mark(my_menu, "> ");
+        set_menu_mark(my_menu, "");
 
         let (mut rows, mut cols) = (0, 0);
         scale_menu(my_menu, &mut rows, &mut cols);
