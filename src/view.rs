@@ -108,7 +108,7 @@ impl LogView {
         keypad(my_menu_win, true);
 
         box_(my_menu_win, 0, 0);
-        mvwprintw(my_menu_win, 0, 2, "MISSION LIST");
+        mvwprintw(my_menu_win, 0, 2, " MISSION LIST ");
         refresh();
         
         post_menu(my_menu);
@@ -130,12 +130,12 @@ impl LogView {
         mvwin(self.info, d_height, cols);
         box_(self.info, 0, 0);
         wrefresh(self.info);
-        //wresize(self.details_window, d_height - 2, (COLS()-cols)-3);
-        //mvwin(self.details_window, 1, cols+2);
-
+        wresize(self.info_window, LINES()-d_height-4, COLS()-cols-3);
+        mvwin(self.info_window, d_height+1, cols+2);
+        //box_(self.info_window, 0, 0);
+        wrefresh(self.info_window);
 
         self.draw_window();
-
     }
 
 
@@ -145,12 +145,17 @@ impl LogView {
 
         werase(self.details);
         box_(self.details, 0, 0);
-        mvwprintw(self.details, 0, 2, "MISSION DETAILS");
+        mvwprintw(self.details, 0, 2, " MISSION DETAILS ");
+        mvwprintw(self.info, 0, 2, " LOG ENTRIES ");
         wrefresh(self.details);
+        wrefresh(self.info);
 
         werase(self.details_window);
+        werase(self.info_window);
 
         wmove(self.details_window, 1, 0);
+
+
 
         let pretty_format = |ref utc: DateTime<Utc>| {
             let local = utc.with_timezone(&Local);
@@ -169,7 +174,9 @@ impl LogView {
                 &Some(ref dt) => format!("Completion on {}", pretty_format(dt.timestamp)),
             };
             wprint(self.details_window, &format!("{}\nStatus: {}\n\nMission brief:\n{}\n", mission.title, status, mission.description));
-            
+                    
+            wmove(self.info_window, 1, 0);
+
             let basic_format = |ref utc: DateTime<Utc>| {
                 let local = utc.with_timezone(&Local);
                 let fmt = format!("%F at %T");
@@ -177,13 +184,14 @@ impl LogView {
             };
 
             for entry in &mission.entries {
-                wprint(self.details_window, &format!("\n\n{}\n", basic_format(entry.timestamp)));
-                wprint(self.details_window, &format!("{}", entry.entry_text));
+                wprint(self.info_window, &format!("{}\n", basic_format(entry.timestamp)));
+                wprint(self.info_window, &format!("{}\n\n", entry.entry_text));
             }
 
         };
 
         wrefresh(self.details_window);
+        wrefresh(self.info_window);
 
 
     }
