@@ -232,13 +232,38 @@ pub fn input_box(window: WINDOW) -> Buffer {
         let (mut row, mut col): (i32, i32) = (0, 0);
         getmaxyx(window, &mut row, &mut col); 
 
+        let mut ax = 0;
+        let mut ay = 0;
+
+        let mut extra: i32 = 0;
         for (i, line) in buf.lines.iter().enumerate() {
-            clrprintw(window, i as i32, 0, line);
-            clrprintw(window, i as i32 + 1, 0, "");
+
+            let mut gain = 0;
+            if col > 0 && line.len() > 0 {
+                gain = line.len() as i32 / col;
+            }
+            if i == buf.pos.1 {
+                ax = buf.pos.0;
+                ay = i as i32 + extra; // now at start of line
+
+                if gain > 0 {
+                    if buf.pos.1 as i32 > col {
+                        let minigain = buf.pos.1 as i32 / col;
+                        ay += minigain; // now at start of line
+                        ax = buf.pos.0 - (minigain * col) as usize;
+                    }
+                }
+            }
+            for l in 0..gain+1 {
+                clrprintw(window, i as i32 + extra + l + 1, 0, "");
+            }
+            clrprintw(window, i as i32 + extra, 0, line);
+            extra += gain;
         }
         
         refresh();
-        wmove(window, buf.pos.1 as i32, buf.pos.0 as i32);
+
+        wmove(window, ay as i32, ax as i32);
         wrefresh(window);
     }
     curs_set(CURSOR_VISIBILITY::CURSOR_INVISIBLE);
