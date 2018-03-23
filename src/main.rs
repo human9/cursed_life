@@ -41,10 +41,12 @@ fn main() {
                 // add new missions
                 let mission_index = lv.log.new_mission();
                 lv.new_node(mission_index);
+                lv.draw_window();
+                lv.resize();
 
             },
             65 | 97 => /* A */ {
-                let entry_text = input_box(lv.details_window).to_string();
+                let entry_text = input_box(lv.info_window).to_string();
                 let entry = MissionEntry::new(entry_text);
                 let index = item_index(current_item(lv.menu)) as usize;
                 {

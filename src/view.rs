@@ -57,8 +57,16 @@ impl LogView {
         wmove(self.details_window, 0, 0);
         werase(self.details_window);
         
-        let buf = input_box(self.details_window);
+        let name = input_box(self.details_window);
 
+        let desc = input_box(self.details_window);
+
+        {
+                    let ref mut mission = self.log.mission_list()[index];
+                    mission.title = name.to_string();
+                    mission.description = desc.to_string();
+
+        }
     }
 
     pub fn up(&mut self) {
@@ -144,7 +152,10 @@ impl LogView {
 
 
         werase(self.details);
+        werase(self.info);
         box_(self.details, 0, 0);
+        box_(self.info, 0, 0);
+
         mvwprintw(self.details, 0, 2, " MISSION DETAILS ");
         mvwprintw(self.info, 0, 2, " LOG ENTRIES ");
         wrefresh(self.details);
