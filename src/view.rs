@@ -228,9 +228,17 @@ pub fn input_box(window: WINDOW) -> Buffer {
     wmove(window, buf.pos.1 as i32, buf.pos.0 as i32);
     wrefresh(window);
 
+    // need scrollability
+    let mut scroll = 0;
+
+
     while buf.take_input() == Ok(()) {
         let (mut row, mut col): (i32, i32) = (0, 0);
         getmaxyx(window, &mut row, &mut col); 
+
+        if buf.pos.1 as i32 + 1 > row + scroll || buf.pos.1 as i32 + 1 < scroll {
+            scroll = (row + scroll) - buf.pos.1 as i32 + 1;
+        }
 
         let mut ax = 0;
         let mut ay = 0;
@@ -260,6 +268,9 @@ pub fn input_box(window: WINDOW) -> Buffer {
             clrprintw(window, i as i32 + extra, 0, line);
             extra += gain;
         }
+
+        clrprintw(window, 2, 0, &format!("{}", scroll));
+
         
         refresh();
 
