@@ -229,16 +229,23 @@ pub fn input_box(window: WINDOW) -> Buffer {
     wrefresh(window);
 
     // need scrollability
-    let mut scroll = 0;
+    let mut view_pos = 0; // the beginning of the view
 
 
     while buf.take_input() == Ok(()) {
         let (mut row, mut col): (i32, i32) = (0, 0);
         getmaxyx(window, &mut row, &mut col); 
 
-        if buf.pos.1 as i32 + 1 > row + scroll || buf.pos.1 as i32 + 1 < scroll {
-            scroll = (row + scroll) - buf.pos.1 as i32 + 1;
+        let view_size = row as usize;
+
+        if buf.pos.1 < view_pos {
+            view_pos = buf.pos.1;
         }
+        else if buf.pos.1 > view_pos + (view_size - 1) {
+            view_pos = buf.pos.1 - (view_size - 1);
+        }
+
+        let sub = view_pos as i32;
 
         let mut ax = 0;
         let mut ay = 0;
@@ -263,18 +270,16 @@ pub fn input_box(window: WINDOW) -> Buffer {
                 }
             }
             for l in 0..gain+1 {
-                clrprintw(window, i as i32 + extra + l + 1, 0, "");
+                clrprintw(window, i as i32 + extra + l + 1 - sub, 0, "");
             }
-            clrprintw(window, i as i32 + extra, 0, line);
+            clrprintw(window, i as i32 + extra - sub, 0, line);
             extra += gain;
         }
 
-        clrprintw(window, 2, 0, &format!("{}", scroll));
-
-        
         refresh();
 
-        wmove(window, ay as i32, ax as i32);
+        wmove(window, ay as i32 - sub, ax as i32);
+
         wrefresh(window);
     }
     curs_set(CURSOR_VISIBILITY::CURSOR_INVISIBLE);
